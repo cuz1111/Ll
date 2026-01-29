@@ -6,15 +6,36 @@ package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
 
+import edu.wpi.first.math.estimator.PoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.LimelightHelpers.PoseEstimate;
 
 public class Robot extends TimedRobot {
     private Command m_autonomousCommand;
 
     private final RobotContainer m_robotContainer;
+    private final Field2d field2d = new Field2d();
 
+    public void Robotinit(){
+        SmartDashboard.putData("Field", field2d);
+    }
+
+    public void getPose2d(){
+        PoseEstimate mt2Estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(null);
+        if(mt2Estimate.pose != null&&mt2Estimate!=null){
+            field2d.setRobotPose(mt2Estimate.pose);
+        }
+        else {
+            SmartDashboard.putBoolean("Field", false);
+        }
+        
+
+    } 
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
         .withTimestampReplay()
