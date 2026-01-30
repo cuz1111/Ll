@@ -28,14 +28,15 @@ public class Ll extends SubsystemBase {
   // final CommandSwerveDrivetrain m_drive = TunerConstants.createDrivetrain();
   private Pose2d pose2d = new Pose2d();
   private PoseEstimate robPoseEstimate = new PoseEstimate();
+  private CommandSwerveDrivetrain m_drive;
   private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
       new Translation2d(0.32385, 0.32385),
       new Translation2d(0.32385, -0.32385),
       new Translation2d(-0.32385, 0.32385),
       new Translation2d(-0.32385, -0.32385));
-  private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, getGyroRotation(), null,
+  private final SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, getGyroRotation(),
+      null,
       pose2d);
-  
 
   private final Rotation2d gyroangle = new Rotation2d();
   private final Pigeon2 m_Pigeon2 = new Pigeon2(1);
@@ -47,8 +48,8 @@ public class Ll extends SubsystemBase {
 
   /** Creates a new Version. */
   public Ll() {
-      SmartDashboard.putData("Field", field2d);
-      SmartDashboard.putData("", field2d);
+    SmartDashboard.putData("Field", field2d);
+    SmartDashboard.putData("", field2d);
   }
 
   public void Roboinit() {
@@ -57,24 +58,26 @@ public class Ll extends SubsystemBase {
 
   @Override
   public void periodic() {
+    if (m_drive==null) return;
+
+    poseEstimator.update(m_drive.getState().Pose.getRotation(), m_drive.getState().ModulePositions);
     gyroangle.getDegrees();
-    LimelightHelpers.SetRobotOrientation("", poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0);
+    LimelightHelpers.SetRobotOrientation("", poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0.0, 0.0,
+        0.0, 0.0, 0.0);
     var mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("");
     if (mt2.tagCount > 0) {
-      poseEstimator.addVisionMeasurement(mt2.pose, mt2.timestampSeconds);
+      poseEstimator.addVisionMeasurement(pose2d, mt2.timestampSeconds);
       mt2.pose = poseEstimator.getEstimatedPosition();
-      field2d.setRobotPose(mt2.pose);
-    }
-    else {System.err.println();}
-
-    
+      field2d.setRobotPose(pose2d);
+    } else {
+      System.err.println();
     }
 
-    // This method will be called once per scheduler run
-  
+  }
+
+  // This method will be called once per scheduler run
 
   public Rotation2d getGyroRotation() {
     return m_Pigeon2.getRotation2d();
   }
 }
-
